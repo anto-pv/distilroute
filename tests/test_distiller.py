@@ -50,6 +50,44 @@ def test_threshold_trigger_calls_train(tmp_path):
     d.route("where is it")
     assert hits["n"] == 1  # retrain fired after threshold reached
 
+def test_autoretrain_never_crashes_routing(tmp_path):
+    # target_agreement > 1 can never be satisfied, so even a retrain that
+    # completes without error stays unpromoted (threshold stays None) and
+    # route() keeps falling back to the LLM -- letting this test focus
+    # purely on "does a stranded-class retrain ever crash routing".
+    d = Distiller(store=str(tmp_path / "r.jsonl"), model_path=str(tmp_path / "m.pkl"),
+                  retrain_every=1, min_logs_to_train=2, target_agreement=2.0)
+    # first label is a rare, lone class; every subsequent call is the common
+    # class, so once enough logs accrue, _split can strand "rare" alone in
+    # holdout, leaving a single-class training set for LogisticRegression.
+    labels = iter(["rare"] + ["common"] * 20)
+
+    def llm(text):
+        return next(labels), 0.9
+
+    route = d.wrap(llm)
+    for i in range(6):
+        intent, source, conf = route(f"query {i}")
+        assert source == "llm"
+
+
+def test_corrupt_model_file_falls_back_to_llm_only(tmp_path):
+    model_path = tmp_path / "m.pkl"
+    # PROTO opcode (0x80) followed by an unsupported protocol number: a
+    # reliable, version-independent way to make pickle.load raise ValueError
+    # rather than one of the previously-caught exception types.
+    model_path.write_bytes(bytes([0x80, 99]))
+    d = Distiller(store=str(tmp_path / "r.jsonl"), model_path=str(model_path))
+    assert d.backend is None
+
+    def llm(text):
+        return "track", 0.9
+
+    route = d.wrap(llm)
+    intent, source, conf = route("where is it")
+    assert source == "llm"
+
+
 from route_distill.adapters.langgraph import make_router_node
 
 class _FakeDistiller:

@@ -27,8 +27,10 @@ class Distiller:
             self.backend = d["backend"]
             self.promotion = d["promotion"]
             self.threshold = self.promotion["threshold"]
-        except (FileNotFoundError, KeyError, pickle.UnpicklingError, EOFError):
-            self.backend = None  # ponytail: any load failure => safe LLM-only
+        except Exception:
+            # ponytail: any load failure (missing file, torn/incompatible
+            # pickle, version-mismatched class refs, etc.) => safe LLM-only
+            self.backend = None
 
     def _save(self):
         with open(self.model_path, "wb") as f:
@@ -47,23 +49,40 @@ class Distiller:
         intent, conf = res if isinstance(res, tuple) else (res, 1.0)
         store.log_decision(self.store_path, text, intent, conf)
         self._since_train += 1
-        if (self.retrain_every and self._since_train >= self.retrain_every
-                and store.count(self.store_path) >= self.min_logs_to_train):
-            self.train()
+        try:
+            # Retrain is best-effort: any failure here (bad data, a
+            # stranded single-class split, disk I/O, ...) must never
+            # affect the response we're already about to return.
+            if (self.retrain_every and self._since_train >= self.retrain_every
+                    and store.count(self.store_path) >= self.min_logs_to_train):
+                self.train()
+        except Exception:
+            pass
         return intent, "llm", conf
 
     def train(self):
-        logs = store.read_all(self.store_path)
-        if len(logs) < self.min_logs_to_train:
+        try:
+            logs = store.read_all(self.store_path)
+            if len(logs) < self.min_logs_to_train:
+                return self.promotion
+            if len({r["intent"] for r in logs}) < 2:
+                return self.promotion  # ponytail: can't fit a classifier on one class
+            try:
+                backend, promotion = trainer.train_and_evaluate(
+                    logs, target_agreement=self.target_agreement)
+            except Exception:
+                # e.g. a rare class stranded alone by the holdout split leaves
+                # a single-class training set and LogisticRegression.fit
+                # raises. Keep whatever model was previously promoted.
+                return self.promotion
+            self.backend, self.promotion = backend, promotion
+            self.threshold = self.promotion["threshold"]
+            self._save()
             return self.promotion
-        if len({r["intent"] for r in logs}) < 2:
-            return self.promotion  # ponytail: can't fit a classifier on one class
-        self.backend, self.promotion = trainer.train_and_evaluate(
-            logs, target_agreement=self.target_agreement)
-        self.threshold = self.promotion["threshold"]
-        self._since_train = 0
-        self._save()
-        return self.promotion
+        finally:
+            # Reset on every exit path so a persistently-failing retrain
+            # doesn't force a full store.count() reread on every route().
+            self._since_train = 0
 
     def report(self):
         return trainer.format_report(self.promotion)
