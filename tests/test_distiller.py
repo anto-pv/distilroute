@@ -49,3 +49,15 @@ def test_threshold_trigger_calls_train(tmp_path):
     d.wrap(lambda t: ("track", 0.9))
     d.route("where is it")
     assert hits["n"] == 1  # retrain fired after threshold reached
+
+from route_distill.adapters.langgraph import make_router_node
+
+class _FakeDistiller:
+    def route(self, text):
+        return "refund", "local", 0.97
+
+def test_langgraph_node_maps_state():
+    node = make_router_node(_FakeDistiller())
+    out = node({"input": "refund please"})
+    assert out == {"intent": "refund", "route_source": "local",
+                   "route_confidence": 0.97}
