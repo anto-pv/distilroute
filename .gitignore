@@ -1,0 +1,13 @@
+# Python build/runtime artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# route-distill runtime output
+*.pkl
+routes.jsonl
+
+# SDD scratch (progress ledger, briefs, reports, diffs)
+.superpowers/
