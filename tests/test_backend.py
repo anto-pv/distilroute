@@ -11,5 +11,6 @@ def test_learns_separable_intents():
     b.fit(texts, labels)
     intent, conf = b.predict("i need a refund now")
     assert intent == "refund"
+    assert type(intent) is str          # not numpy.str_ leaking into caller state
     assert 0.0 <= conf <= 1.0
     assert conf > 0.5

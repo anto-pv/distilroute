@@ -20,4 +20,6 @@ class TfidfLRBackend:
     def predict(self, text):
         proba = self.model.predict_proba([text])[0]
         idx = proba.argmax()
-        return self.model.classes_[idx], float(proba[idx])
+        # str(): classes_ is a numpy array, so classes_[idx] is a np.str_ that
+        # would otherwise leak into caller state / graph nodes.
+        return str(self.model.classes_[idx]), float(proba[idx])
