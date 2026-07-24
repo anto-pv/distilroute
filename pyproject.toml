@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,12 +7,28 @@ name = "distilroute"
 version = "0.1.0"
 description = "Distill an LLM intent classifier into a cheap local router trained from its own logs."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
+authors = [{ name = "anto-pv", email = "antopv833@gmail.com" }]
+keywords = ["llm", "intent-classification", "routing", "langgraph", "distillation", "tfidf"]
 dependencies = ["scikit-learn>=1.3"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/anto-pv/distilroute"
+Repository = "https://github.com/anto-pv/distilroute"
+Issues = "https://github.com/anto-pv/distilroute/issues"
 
 [project.scripts]
 distill = "distilroute.cli:main"
