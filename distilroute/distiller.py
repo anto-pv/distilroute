@@ -1,4 +1,4 @@
-# route_distill/distiller.py
+# distilroute/distiller.py
 import pickle
 
 from .core import store, trainer

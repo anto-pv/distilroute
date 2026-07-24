@@ -1,4 +1,4 @@
-# route_distill/cli.py
+# distilroute/cli.py
 import argparse
 import sys
 

@@ -1,4 +1,4 @@
-from route_distill.core.backend import TfidfLRBackend
+from distilroute.core.backend import TfidfLRBackend
 
 def test_learns_separable_intents():
     texts = [

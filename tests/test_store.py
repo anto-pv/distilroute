@@ -1,4 +1,4 @@
-from route_distill.core import store
+from distilroute.core import store
 
 def test_roundtrip_and_skip_corrupt(tmp_path):
     p = str(tmp_path / "routes.jsonl")

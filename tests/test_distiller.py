@@ -1,11 +1,11 @@
 # tests/test_distiller.py
-from route_distill import Distiller
+from distilroute import Distiller
 
 REFUND = ["refund my money", "i want a refund", "money back please", "refund now"]
 TRACK  = ["track my package", "where is my order", "delivery status", "track shipment"]
 
 def _seed_store(path):
-    from route_distill.core import store
+    from distilroute.core import store
     for t in REFUND * 4:
         store.log_decision(path, t, "refund", 1.0)
     for t in TRACK * 4:
@@ -88,7 +88,7 @@ def test_corrupt_model_file_falls_back_to_llm_only(tmp_path):
     assert source == "llm"
 
 
-from route_distill.adapters.langgraph import make_router_node
+from distilroute.adapters.langgraph import make_router_node
 
 class _FakeDistiller:
     def route(self, text):

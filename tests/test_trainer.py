@@ -1,4 +1,4 @@
-from route_distill.core import trainer
+from distilroute.core import trainer
 
 REFUND = ["refund my money", "i want a refund", "money back please", "refund now"]
 TRACK  = ["track my package", "where is my order", "delivery status", "track shipment"]

@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "route-distill"
+name = "distilroute"
 version = "0.1.0"
 description = "Distill an LLM intent classifier into a cheap local router trained from its own logs."
 readme = "README.md"
@@ -15,7 +15,7 @@ dependencies = ["scikit-learn>=1.3"]
 dev = ["pytest>=7"]
 
 [project.scripts]
-distill = "route_distill.cli:main"
+distill = "distilroute.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["route_distill*"]
+include = ["distilroute*"]

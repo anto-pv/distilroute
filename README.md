@@ -1,6 +1,6 @@
-# route-distill
+# distilroute
 
-Divert traffic away from an expensive LLM intent classifier. `route-distill`
+Divert traffic away from an expensive LLM intent classifier. `distilroute`
 logs the LLM's own decisions, trains a cheap local TF-IDF+LogisticRegression
 model from them, and routes high-confidence traffic locally — while never
 routing worse than LLM-only.
@@ -8,13 +8,13 @@ routing worse than LLM-only.
 ## Install
 
 ```bash
-pip install route-distill
+pip install distilroute
 ```
 
 ## Use
 
 ```python
-from route_distill import Distiller
+from distilroute import Distiller
 
 d = Distiller(store="routes.jsonl", retrain_every=500)
 route = d.wrap(my_llm_classify_fn)   # my_llm_classify_fn(text) -> (intent, confidence)
@@ -28,7 +28,7 @@ print(d.report())    # "Local model can handle 61% of traffic at confidence >= 0
 ### LangGraph
 
 ```python
-from route_distill.adapters.langgraph import make_router_node
+from distilroute.adapters.langgraph import make_router_node
 node = make_router_node(d)   # drop into your graph in place of the classifier node
 ```
 
